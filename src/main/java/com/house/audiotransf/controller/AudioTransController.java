@@ -9,20 +9,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.UUID;
 
 @Controller
 public class AudioTransController {
 
-    private final static String STORE_PLACE = "C:\\Users\\ckh\\Desktop\\pcm\\";
+    private final static String STORE_PLACE = "C:"+ File.separator + "Users" +File.separator +"ckh"+File.separator +"Desktop"+File.separator +"pcm"+File.separator ;
+    private final static String LINUX_STORE_PLACE = "/houseapps/audiofiles";
+
 
     // 语音合成对象
     private SpeechSynthesizer mTts = SpeechSynthesizer.createSynthesizer();
@@ -131,7 +132,7 @@ public class AudioTransController {
 
     @RequestMapping("/audiotransf/tts")
     @ResponseBody
-    public BaseVo ttsSpeaker(@RequestParam(value = "text", required = false) String text) {
+    public BaseVo ttsSpeaker(@RequestParam(value = "text", required = false) String text, HttpServletResponse response) {
 
         SpeechUtility.createUtility( SpeechConstant.APPID +"=6dbfa26f ");
 
@@ -151,30 +152,45 @@ public class AudioTransController {
         mTts.setParameter( SpeechConstant.TTS_BUFFER_EVENT, "1" );
 
 //        mTts.startSpeaking( mText, mSynListener );
-        String fileName = "1.PCM";
+        UUID preName = UUID.randomUUID();
+        String fileName = preName + ".PCM";
 
-        String path = STORE_PLACE +fileName;
+        String path = LINUX_STORE_PLACE +fileName;
+        logger.info("wenjianming:" + path);
 
         mTts.synthesizeToUri(mText,path,synthesize);
 
 
-
-        return BaseVo.succ();
+        return BaseVo.succ(path);
     }
 
 
-    @RequestMapping("/audiotransf/download")
-    public String downloadAudio(HttpServletRequest request, HttpServletResponse response,ModelMap map) {
+    @RequestMapping(value = "/audiotransf/download",method = RequestMethod.POST)
+    @ResponseBody
+    public BaseVo downloadAudio(HttpServletRequest request, HttpServletResponse response, @RequestParam(value = "path") String path) {
 
-        String fileName = "1.PCM";
-        String path = STORE_PLACE +fileName;
+        if (StringUtils.isBlank(path)) {
+            return BaseVo.fail("000001","路径不能为空!");
+        }
 
         logger.info("1111111111111111111111111111111111" + path);
+
+        String separator = File.separator;
+        logger.info("路径分隔符: " + separator);
+        String[] strings = path.split(separator);
+
+        String fileName = strings[strings.length - 1];
+        logger.info("文件名：" + fileName);
+
+
 
         File file  = new File(path);
         if (file.exists()) {
             //设置响应头信息
-            response.setHeader("Content-disposition", "attachment;filename="+fileName);//使下载的文件名与原文件名对应
+            response.reset();
+            response.setContentType("application/octet-stream");
+            response.setHeader("Content-Disposition", "attachment;filename="+fileName);//使下载的文件名与原文件名对应
+            response.setHeader("Connection", "close");
 
             byte[] buffer = new byte[1024];
             FileInputStream fis = null;
@@ -209,7 +225,7 @@ public class AudioTransController {
 
 
 
-        return null;
+        return BaseVo.succ();
     }
 
 
