@@ -1,0 +1,22 @@
+jar包及脚本目录: /houseapps/audiotransf/boot/bin/
+
+启动日志目录: /houseapps/audiotransf/boot/tomcat/
+
+日志目录: /houseapps/audiotransf/boot/spring/log/
+
+mysql数据库位置: /usr/local/mysql
+mysql指令位置: /usr/local/mysql/bin
+登录mysql数据库方式: 如果进入到bin目录了，则 ./mysql -uroot -p 然后回车输入密码
+
+
+无论是语音合成直接播放还是语音合成为本地PCM文件，都需要项目启动时先加载共享库（Windows下为msc32.dll或msc64.dll文件，Linux下libmsc32.so或libmsc64.so文件），报错是因为系统找不到共享库。
+
+一般来说，在 Windows 下，系统加载共享库时的优先级将按以下的顺序：
+1，应用的当前运行目录；
+2，由系统环境参数 Path 指定LD_LIBRARY_PATH的目录(关于windows环境变量配置，参考1.png, 2.png, 3.png)；
+3，System32 目录；
+
+
+而在Linux下，系统加载共享库时的优先级将按以下顺序：
+1，LD_LIBRARY_PATH指定的目录(linux环境变量配置，参考4.png, 5.png, 6.png, 7.png， 最后再重启项目)；
+2，/lib/ 和 /lib64/ 目录；

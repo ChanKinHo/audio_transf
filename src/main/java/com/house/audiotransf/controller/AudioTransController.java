@@ -22,7 +22,7 @@ import java.util.UUID;
 public class AudioTransController {
 
     private final static String STORE_PLACE = "C:"+ File.separator + "Users" +File.separator +"ckh"+File.separator +"Desktop"+File.separator +"pcm"+File.separator ;
-    private final static String LINUX_STORE_PLACE = "/houseapps/audiotransf/audiofiles";
+    private final static String LINUX_STORE_PLACE = File.separator + "houseapps"+ File.separator + "audiotransf"+ File.separator + "audiofiles"+ File.separator;
 
 
     // 语音合成对象
@@ -39,13 +39,45 @@ public class AudioTransController {
         }
 
         @Override
-        public void onSynthesizeCompleted(String s, SpeechError speechError) {
+        public void onSynthesizeCompleted(String uri, SpeechError speechError) {
+            if (speechError == null) {
+                logger.info("*************合成成功*************");
+                logger.info("合成音频生成路径：" + uri);
+            } else {
+                logger.error("*************" + speechError.getErrorCode()
+                        + "*************");
+            }
+
 
         }
 
         @Override
-        public void onEvent(int i, int i1, int i2, int i3, Object o, Object o1) {
+        public void onEvent(int eventType, int arg1, int arg2, int arg3, Object obj1, Object obj2) {
 
+            if( SpeechEvent.EVENT_TTS_BUFFER == eventType ){
+                logger.info( "onEvent: type="+eventType
+                        +", arg1="+arg1
+                        +", arg2="+arg2
+                        +", arg3="+arg3
+                        +", obj2="+(String)obj2 );
+                ArrayList<?> bufs = null;
+                if( obj1 instanceof ArrayList<?> ){
+                    bufs = (ArrayList<?>) obj1;
+                }else{
+                    logger.info( "onEvent error obj1 is not ArrayList !" );
+                }//end of if-else instance of ArrayList
+
+                if( null != bufs ){
+                    for( final Object obj : bufs ){
+                        if( obj instanceof byte[] ){
+                            final byte[] buf = (byte[]) obj;
+                            logger.error( "onEvent buf length: "+buf.length );
+                        }else{
+                            logger.error( "onEvent error element is not byte[] !" );
+                        }
+                    }//end of for
+                }//end of if bufs not null
+            }//end of if tts buffer event
         }
     };
 
@@ -153,12 +185,16 @@ public class AudioTransController {
 
 //        mTts.startSpeaking( mText, mSynListener );
         UUID preName = UUID.randomUUID();
-        String fileName = preName + ".PCM";
+        String fileName = preName + ".pcm";
 
         String path = LINUX_STORE_PLACE +fileName;
         logger.info("wenjianming:" + path);
 
-        mTts.synthesizeToUri(mText,path,synthesize);
+        try {
+            mTts.synthesizeToUri(mText,path,synthesize);
+        } catch (Exception e) {
+            logger.error("生成音频文件错误",e);
+        }
 
 
         return BaseVo.succ(path);
