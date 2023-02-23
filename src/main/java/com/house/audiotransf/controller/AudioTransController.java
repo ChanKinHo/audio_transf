@@ -22,7 +22,7 @@ import java.util.UUID;
 public class AudioTransController {
 
     private final static String STORE_PLACE = "C:"+ File.separator + "Users" +File.separator +"ckh"+File.separator +"Desktop"+File.separator +"pcm"+File.separator ;
-    private final static String LINUX_STORE_PLACE = "/houseapps/audiofiles";
+    private final static String LINUX_STORE_PLACE = "/houseapps/audiotransf/audiofiles";
 
 
     // 语音合成对象
