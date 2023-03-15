@@ -1,16 +1,13 @@
 package com.house.audiotransf.service.impl;
 
-import com.house.audiotransf.controller.AudioTransController;
 import com.house.audiotransf.service.AudioGeneration;
 import com.iflytek.cloud.speech.*;
-import com.tencent.tts.service.SpeechSynthesisListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Properties;
 import java.util.UUID;
 
 @Service

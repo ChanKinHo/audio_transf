@@ -51,16 +51,15 @@ public class TencAudioHandler {
 
     public static void main(String[] args) {
         String appId = "1317245277";
-        String secretId = "BGmAONLKVceT3VWNzNYUAduwpWDlCVlq";
-        String secretKey = "AKIDGNJ1TfbGfr01qUu51gBj6ZOE2by70hCT";
+        String secretId = "AKIDd8Ucct5A4rTsBNM6uWt31jNuEQWP4Vhf";
+        String secretKey = "rFQN7dvFSRBgxxxskQvFMKBrLbieNtDL";
 
         //创建SpeechSynthesizerClient实例，目前是单例
         SpeechClient client = SpeechClient.newInstance(appId, secretId, secretKey);
         //初始化SpeechSynthesizerRequest，SpeechSynthesizerRequest包含请求参数
         SpeechSynthesisRequest request = SpeechSynthesisRequest.initialize();
-        request.setSessionId("111");
         request.setCodec(codec);
-        request.setVoiceType(1001);
+        request.setVoiceType(1003);
         //使用客户端client创建语音合成实例
         SpeechSynthesizer speechSynthesizer = client.newSpeechSynthesizer(request, new MySpeechSynthesizerListener());
         //执行语音合成
@@ -75,17 +74,19 @@ public class TencAudioHandler {
         @Override
         public void onComplete(SpeechSynthesisResponse response) {
             logger.info("onComplete");
+            String s = "";
             if (response.getSuccess()) {
                 //根据具体的业务选择逻辑处理
-                //Ttsutils.saveResponseToFile(response.getAudio(),"./111.mp3");
-                if ("pcm".equals(codec)) {
-                    //pcm 转 wav
-                    Ttsutils.responsePcm2Wav(sampleRate, response.getAudio(), response.getSessionId());
-                }
+
+                Ttsutils.saveResponseToFile(response.getAudio(),"C:\\Users\\ckh\\Desktop\\pcm\\" + response.getSessionId() + ".pcm");
+//                if ("pcm".equals(codec)) {
+//                    //pcm 转 wav
+//                     s = Ttsutils.responsePcm2Wav(sampleRate, response.getAudio(), response.getSessionId());
+//                }
 
             }
             System.out.println("结束：" + response.getSuccess() + " " + response.getCode()
-                    + " " + response.getMessage() + " " + response.getEnd());
+                    + " " + response.getMessage() + " " + response.getEnd() + " " + s);
 
         }
 
