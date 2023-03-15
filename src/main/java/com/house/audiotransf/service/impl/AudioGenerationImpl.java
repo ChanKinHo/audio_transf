@@ -22,8 +22,6 @@ public class AudioGenerationImpl implements AudioGeneration {
     private final static String LINUX_STORE_PLACE = File.separator + "houseapps"+ File.separator + "audiotransf"+ File.separator + "audiofiles"+ File.separator;
     private final static String XUNFEI_APPID = "6dbfa26f";
 
-    private final Properties pros = new Properties();
-
 
     // 讯飞语音合成对象
     private SpeechSynthesizer mTts = SpeechSynthesizer.createSynthesizer();

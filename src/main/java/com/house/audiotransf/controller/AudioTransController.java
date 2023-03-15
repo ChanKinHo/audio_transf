@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.house.audiotransf.constant.BaseVo;
 import com.house.audiotransf.constant.RespConstant;
 import com.house.audiotransf.service.AudioGeneration;
+import com.house.audiotransf.synthesizer.tencent.TencAudioHandler;
 import com.house.audiotransf.untils.WaveHeader;
 import com.iflytek.cloud.speech.*;
 import org.apache.commons.lang.StringUtils;
@@ -30,11 +31,20 @@ public class AudioTransController {
     @Resource
     private AudioGeneration generation;
 
+    @Resource
+    private TencAudioHandler handler;
+
 
     @RequestMapping("/audiotransf/hello")
     public String testNew(@RequestParam(value = "name",required = false) String name, ModelMap map){
-
+        String s = "";
+        try {
+            s = handler.generateAudio(name);
+        } catch (Exception e) {
+            logger.error("load properties err",e);
+        }
         map.put("msg", "hello," + name);
+        map.put("pros",s);
 
         return "welcome";
     }
@@ -184,15 +194,7 @@ public class AudioTransController {
         long length = file.length();
         System.out.println("length:" + length);
 
-
-//        int size = fis.read();
-//        System.out.println("size:" + size);
         int pcmSize = (int) length;
-//        while (size != -1) {
-//            pcmSize += size;
-//            size = fis.read(buf);
-//        }
-//        fis.close();
 
         System.out.println("pcmsize:" + pcmSize);
 
