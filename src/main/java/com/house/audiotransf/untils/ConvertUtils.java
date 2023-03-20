@@ -17,8 +17,8 @@ public class ConvertUtils {
     public static String convertToMp3(String originPath) throws Exception{
         String separator = File.separator;
         logger.info("路径分隔符: " + separator);
-        String[] strings = originPath.split(separator);
-//        String[] strings = path.split("\\\\");
+//        String[] strings = originPath.split(separator);
+        String[] strings = originPath.split("\\\\");
 
         String sourceFileName = strings[strings.length - 1];
         logger.info("文件名：" + sourceFileName);

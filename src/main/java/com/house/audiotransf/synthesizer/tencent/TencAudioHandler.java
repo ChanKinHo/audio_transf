@@ -9,9 +9,12 @@ import com.tencent.tts.service.SpeechSynthesizer;
 import com.tencent.tts.utils.Ttsutils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,16 +23,29 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TencAudioHandler {
     private static final Logger logger = LoggerFactory.getLogger(TencAudioHandler.class);
 
-    private final Properties props = new Properties();
 
-    private static String codec = "pcm";
-    private static int sampleRate = 16000;
-    private static byte[] datas = new byte[0];
+    private static final Properties props = new Properties();
+
+    private static final String codec = "pcm";
+
+    private static String path = "";
+
+    private static String rootPath = "";
+
+    @Value("${com.house.hot.path}")
+    private String hotPath;
+
+    @Value("${com.house.save.path}")
+    private String savePath;
 
     public String generateAudio(String text) throws Exception{
 
         //当配置文件在src/main/resource目录下时只能通过次方式读取
-        props.load(this.getClass().getResourceAsStream("/hot_config.properties"));
+//        props.load(this.getClass().getResourceAsStream("/hot_config.properties"));
+        logger.info("读取配置的热部署文件路径: " + hotPath);
+        props.load(new FileInputStream(hotPath));
+//        rootPath = props.getProperty("linux_root_path");
+        rootPath = savePath;
 
         String appId = props.getProperty("tencent_appId");
         String secretId = props.getProperty("tencent_secretId");
@@ -46,25 +62,7 @@ public class TencAudioHandler {
         //执行语音合成
         speechSynthesizer.synthesis(text);
 
-        return "fine";
-    }
-
-    public static void main(String[] args) {
-        String appId = "1317245277";
-        String secretId = "AKIDd8Ucct5A4rTsBNM6uWt31jNuEQWP4Vhf";
-        String secretKey = "rFQN7dvFSRBgxxxskQvFMKBrLbieNtDL";
-
-        //创建SpeechSynthesizerClient实例，目前是单例
-        SpeechClient client = SpeechClient.newInstance(appId, secretId, secretKey);
-        //初始化SpeechSynthesizerRequest，SpeechSynthesizerRequest包含请求参数
-        SpeechSynthesisRequest request = SpeechSynthesisRequest.initialize();
-        request.setCodec(codec);
-        request.setVoiceType(1003);
-        //使用客户端client创建语音合成实例
-        SpeechSynthesizer speechSynthesizer = client.newSpeechSynthesizer(request, new MySpeechSynthesizerListener());
-        //执行语音合成
-        String text = "dog shit";
-        speechSynthesizer.synthesis(text);
+        return path;
     }
 
     public static class MySpeechSynthesizerListener extends SpeechSynthesisListener {
@@ -74,34 +72,30 @@ public class TencAudioHandler {
         @Override
         public void onComplete(SpeechSynthesisResponse response) {
             logger.info("onComplete");
-            String s = "";
-            if (response.getSuccess()) {
-                //根据具体的业务选择逻辑处理
 
-                Ttsutils.saveResponseToFile(response.getAudio(),"C:\\Users\\ckh\\Desktop\\pcm\\" + response.getSessionId() + ".pcm");
-//                if ("pcm".equals(codec)) {
-//                    //pcm 转 wav
-//                     s = Ttsutils.responsePcm2Wav(sampleRate, response.getAudio(), response.getSessionId());
-//                }
+            if (response.getSuccess()) {
+                path = rootPath + response.getSessionId() + ".pcm";
+                //根据具体的业务选择逻辑处理
+                Ttsutils.saveResponseToFile(response.getAudio(),path);
 
             }
-            System.out.println("结束：" + response.getSuccess() + " " + response.getCode()
-                    + " " + response.getMessage() + " " + response.getEnd() + " " + s);
+            logger.info("结束：" + response.getSuccess() + " " + response.getCode()
+                    + " " + response.getMessage() + " " + response.getEnd() + " " + path);
 
         }
 
         @Override
         public void onMessage(byte[] data) {
-            logger.info("onMessage length:" + data.length);
+            logger.info("tencent onMessage length:" + data.length);
             sessionId.incrementAndGet();
 
         }
 
         @Override
         public void onFail(SpeechSynthesisResponse exception) {
-            logger.info("onFail");
-            logger.error(exception.getCode() + "---" + exception.getMessage());
+            logger.error("tencent onFail " + exception.getCode() + "---" + exception.getMessage());
         }
     }
+
 
 }
