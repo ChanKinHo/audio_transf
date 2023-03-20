@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,11 @@ public class AudioTransController {
 
     @Resource
     private AudioGeneration generation;
+
+    private final Properties props = new Properties();
+
+    @Value("${com.house.hot.path}")
+    private String hotPath;
 
 
     @RequestMapping("/audiotransf/tts")
@@ -94,6 +100,13 @@ public class AudioTransController {
 
 //        logger.info("传进来的base64对象: " + JSON.toJSONString(baseObj));
 
+        try {
+            props.load(new FileInputStream(hotPath));
+        } catch (Exception e) {
+            logger.error("base64ToFile load props err ",e);
+            return BaseVo.fail();
+        }
+
         String str = (String) baseObj.get("baseStr");
 
         logger.info("传进来的base64字符串: " + str);
@@ -101,7 +114,7 @@ public class AudioTransController {
 
         File file = null;
         //创建文件目录
-        String filePath = "C:\\Users\\ckh\\Desktop\\MP3\\";
+        String filePath = props.getProperty("decode_Base_Path");
         File dir = new File(filePath);
         //判断是否存在文件夹
         if (!dir.exists() && !dir.isDirectory()) {
